@@ -1,11 +1,11 @@
 ﻿# Giai đoạn 1: Build ứng dụng
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY LevelUp.csproj . # Copy file .csproj vào thư mục làm việc hiện tại (/src)
+COPY LevelUp.csproj . 
 
 RUN dotnet restore LevelUp.csproj # Restore gói cho .csproj
 
-COPY . . # Copy toàn bộ mã nguồn từ thư mục gốc của repo vào /src trong container
+COPY . . 
 
 # Chuyển thư mục làm việc về /src (vì LevelUp.csproj nằm ở gốc của /src)
 WORKDIR /src
@@ -22,5 +22,5 @@ RUN dotnet publish LevelUp.csproj -c Release -o /app/publish /p:UseAppHost=false
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 EXPOSE 8080 
-COPY --from=publish /app/publish . # Copy các file đã publish vào thư mục /app trong image cuối cùng
+COPY --from=publish /app/publish . 
 ENTRYPOINT ["dotnet", "LevelUp.dll"] # Tên file DLL phải đúng LevelUp.dll (tên dự án của bạn)
