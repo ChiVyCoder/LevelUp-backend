@@ -1,16 +1,18 @@
 ﻿using LevelUp.Data;
 using LevelUp.Services;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    // Thay đổi từ UseSqlServer sang UseNpgsql
+    options.UseNpgsql(connectionString));
+
 
 // Cấu hình CORS để cho phép frontend gọi API
 builder.Services.AddCors(options =>
