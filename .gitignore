@@ -1,6 +1,53 @@
-﻿namespace LevelUp
-{
-    public class _
-    {
-    }
-}
+﻿# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userprefs
+*.licx
+*.tlog
+*.docstates
+*.vstags
+*.webtest
+*.rdc
+*.ruleset
+*.trx
+*.testrunconfig
+*.diagsession
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+[Tt]estResults/
+[Bb]uildLog.htm
+*.log
+*.pdb
+*.opendb
+*.opensdf
+*.sdf
+*.sln.docstates
+*.vc.db
+*.vc.opendb
+*.vc.sdf
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Rider files
+.idea/
+
+# Azure-specific files
+.azure/
+
+# Miscellaneous
+*.resharper
+*.userprefs
+Thumbs.db
+Desktop.ini
+
+# ASP.NET Core specific
+appsettings.Development.json
+
+publish/

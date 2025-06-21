@@ -21,6 +21,6 @@ RUN dotnet publish LevelUp.csproj -c Release -o /app/publish /p:UseAppHost=false
 # Giai đoạn 3: Tạo final image (hình ảnh cuối cùng để chạy)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-EXPOSE 8080 # Port mà container sẽ lắng nghe (Render phải được cấu hình cũng 8080)
+EXPOSE 8080 
 COPY --from=publish /app/publish . # Copy các file đã publish vào thư mục /app trong image cuối cùng
 ENTRYPOINT ["dotnet", "LevelUp.dll"] # Tên file DLL phải đúng LevelUp.dll (tên dự án của bạn)
