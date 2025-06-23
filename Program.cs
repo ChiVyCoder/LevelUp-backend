@@ -3,12 +3,12 @@ using LevelUp.Services;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string rawConnectionString;
-
-rawConnectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+// Lấy chuỗi kết nối
+string rawConnectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
 
 if (string.IsNullOrEmpty(rawConnectionString))
 {
@@ -21,21 +21,33 @@ if (string.IsNullOrEmpty(rawConnectionString))
 }
 
 string finalConnectionString;
-try
+
+if (rawConnectionString.StartsWith("postgres://") || rawConnectionString.StartsWith("postgresql://"))
 {
-    var npgsqlBuilder = new NpgsqlConnectionStringBuilder(rawConnectionString);
-    finalConnectionString = npgsqlBuilder.ConnectionString;
+    // Chuyển từ URI sang key=value format cho Npgsql
+    var uri = new Uri(rawConnectionString);
+    var userInfo = uri.UserInfo.Split(':');
+
+    var builderNpgsql = new NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.Port,
+        Username = userInfo[0],
+        Password = userInfo[1],
+        Database = uri.AbsolutePath.Trim('/'),
+        SslMode = SslMode.Require,
+        TrustServerCertificate = true
+    };
+
+    finalConnectionString = builderNpgsql.ConnectionString;
 }
-catch (ArgumentException ex)
+else
 {
-    // Đây là nơi lỗi xảy ra. Dòng này sẽ được ghi vào log của Render.
-    // Lỗi ArgumentException chỉ ra chuỗi kết nối rawConnectionString không hợp lệ.
-    Console.WriteLine($"Error parsing connection string: {ex.Message}");
-    Console.WriteLine($"Raw Connection String: '{rawConnectionString}'");
-    throw; // Ném lại lỗi để Render báo lỗi deploy
+    // Đã là key=value sẵn
+    finalConnectionString = rawConnectionString;
 }
 
-
+// Đăng ký DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(finalConnectionString));
 
@@ -48,15 +60,17 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("https://levelup-ui.vercel.app")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
         });
 });
-builder.Services.AddScoped<IEmailService, EmailService>();
 
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
+// Tạo database nếu chưa có
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
