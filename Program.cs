@@ -2,6 +2,7 @@
 using LevelUp.Services;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +20,21 @@ if (string.IsNullOrEmpty(rawConnectionString))
     throw new InvalidOperationException("Database connection string is not configured. Please set 'ConnectionStrings:DefaultConnection' in appsettings.json or 'DATABASE_URL' environment variable.");
 }
 
-var npgsqlBuilder = new NpgsqlConnectionStringBuilder(rawConnectionString);
-string finalConnectionString = npgsqlBuilder.ConnectionString;
+string finalConnectionString;
+try
+{
+    var npgsqlBuilder = new NpgsqlConnectionStringBuilder(rawConnectionString);
+    finalConnectionString = npgsqlBuilder.ConnectionString;
+}
+catch (ArgumentException ex)
+{
+    // Đây là nơi lỗi xảy ra. Dòng này sẽ được ghi vào log của Render.
+    // Lỗi ArgumentException chỉ ra chuỗi kết nối rawConnectionString không hợp lệ.
+    Console.WriteLine($"Error parsing connection string: {ex.Message}");
+    Console.WriteLine($"Raw Connection String: '{rawConnectionString}'");
+    throw; // Ném lại lỗi để Render báo lỗi deploy
+}
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(finalConnectionString));
