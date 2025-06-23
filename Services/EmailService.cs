@@ -29,19 +29,35 @@ namespace LevelUp.Services
 
         private async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            var smtpClient = new SmtpClient(_configuration["EmailSettings:SmtpHost"])
+            var smtpHost = _configuration["EmailSettings:SmtpHost"] ?? throw new InvalidOperationException("EmailSettings:SmtpHost not configured.");
+
+            if (!int.TryParse(_configuration["EmailSettings:SmtpPort"], out int smtpPort))
             {
-                Port = int.Parse(_configuration["EmailSettings:SmtpPort"]),
-                Credentials = new NetworkCredential(
-                    _configuration["EmailSettings:SenderEmail"],
-                    _configuration["EmailSettings:SenderPassword"]
-                ),
-                EnableSsl = bool.Parse(_configuration["EmailSettings:EnableSsl"])
+                smtpPort = 587;
+                Console.WriteLine("Warning: EmailSettings:SmtpPort not found or invalid. Using default port 587.");
+            }
+
+            var senderEmail = _configuration["EmailSettings:SenderEmail"] ?? throw new InvalidOperationException("EmailSettings:SenderEmail not configured.");
+            var senderPassword = _configuration["EmailSettings:SenderPassword"] ?? throw new InvalidOperationException("EmailSettings:SenderPassword not configured.");
+
+            if (!bool.TryParse(_configuration["EmailSettings:EnableSsl"], out bool enableSsl))
+            {
+                enableSsl = true;
+                Console.WriteLine("Warning: EmailSettings:EnableSsl not found or invalid. Using default value true.");
+            }
+
+            var senderName = _configuration["EmailSettings:SenderName"] ?? "Your Application Name"; // Giá trị mặc định cho SenderName
+
+            var smtpClient = new SmtpClient(smtpHost)
+            {
+                Port = smtpPort,
+                Credentials = new NetworkCredential(senderEmail, senderPassword),
+                EnableSsl = enableSsl
             };
 
             var mailMessage = new MailMessage
             {
-                From = new MailAddress(_configuration["EmailSettings:SenderEmail"], _configuration["EmailSettings:SenderName"]),
+                From = new MailAddress(senderEmail, senderName),
                 Subject = subject,
                 Body = body,
                 IsBodyHtml = true

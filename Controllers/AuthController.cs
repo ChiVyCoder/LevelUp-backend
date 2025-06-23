@@ -89,9 +89,15 @@ namespace LevelUp.Controllers
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginData.Email);
+
             if (user == null)
             {
                 return Unauthorized(new { message = "Sai email hoặc mật khẩu." });
+            }
+
+            if (string.IsNullOrEmpty(user.PasswordSalt))
+            {
+                return Unauthorized(new { message = "Lỗi xác thực người dùng. Vui lòng liên hệ hỗ trợ." });
             }
 
             byte[] storedSalt = Convert.FromBase64String(user.PasswordSalt);

@@ -101,13 +101,13 @@ namespace LevelUp.Controllers
                 app.Id,
                 app.ApplicationDate,
                 app.Status,
-                Job = new
+                Job = app.Job != null ? new 
                 {
-                    app.Job.JobID, 
+                    app.Job.JobID,
                     app.Job.CompanyName,
                     app.Job.Location,
                     app.Job.Industry,
-                }
+                } : null 
             }).ToList();
 
             return Ok(result);

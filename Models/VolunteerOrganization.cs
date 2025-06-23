@@ -7,6 +7,6 @@
         public string? Description { get; set; }
         public string? LogoUrl { get; set; }
 
-        public ICollection<VolunteerRegistration> VolunteerRegistrations { get; set; }
+        public ICollection<VolunteerRegistration> VolunteerRegistrations { get; set; } = new List<VolunteerRegistration>();
     }
 }

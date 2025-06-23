@@ -81,7 +81,7 @@ namespace LevelUp.Controllers
 
             var completedCourses = await _context.UserCourses
                                                  .Where(uc => uc.UserId == userId && uc.Completed)
-                                                 // XÓA DÒNG NÀY: .Include(uc => uc.Course)
+                                              
                                                  .ToListAsync();
 
             if (completedCourses == null || !completedCourses.Any())
@@ -96,8 +96,6 @@ namespace LevelUp.Controllers
                 uc.CourseId,
                 uc.EnrolledAt,
                 uc.Completed,
-                CourseTitle = (string)null 
-                                          
             }).ToList();
 
             return Ok(result);

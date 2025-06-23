@@ -10,14 +10,14 @@ namespace LevelUp.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Tên người dùng là bắt buộc.")]
-        public string Username { get; set; }
+        public string Username { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email là bắt buộc.")]
         [EmailAddress(ErrorMessage = "Email không hợp lệ.")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Mật khẩu là bắt buộc.")]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         public string? PasswordHash { get; set; }
         public string? PasswordSalt { get; set; }
@@ -34,9 +34,9 @@ namespace LevelUp.Models
     public class Login
     {
         [Required]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         [Required(ErrorMessage = "Mật khẩu là bắt buộc.")]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
     }
 
     public class UserProfileUpdateDto

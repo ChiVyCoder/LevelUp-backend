@@ -68,16 +68,15 @@ namespace LevelUp.Controllers
             var result = applications.Select(app => new
             {
                 app.Id,
-                app.ApplicationDate, 
-                Volunteer = new 
+                app.ApplicationDate,
+                Volunteer = app.Volunteer != null ? new 
                 {
                     app.Volunteer.VolunteerID,
                     app.Volunteer.Title,
                     app.Volunteer.Location,
                     app.Volunteer.Industry,
                     app.Volunteer.Type,
-                    // Thêm các trường khác của Volunteer mà bạn muốn hiển thị
-                }
+                } : null
             }).ToList();
 
             return Ok(result);

@@ -19,15 +19,15 @@ namespace LevelUp.Models
 
         [Required]
         [StringLength(100)]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
 
         [Required]
         [StringLength(20)]
-        public string Phone { get; set; }
+        public string Phone { get; set; } = string.Empty;
 
         [Required]
         [StringLength(10)]
-        public string Gender { get; set; }
+        public string Gender { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.Date)]
@@ -36,7 +36,7 @@ namespace LevelUp.Models
         [Required]
         [EmailAddress]
         [StringLength(100)]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required]
         public DateTime ApplicationDate { get; set; } = DateTime.UtcNow;
