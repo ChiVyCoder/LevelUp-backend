@@ -1,15 +1,29 @@
 ﻿using LevelUp.Data;
 using LevelUp.Services;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
-using System.Text;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? builder.Configuration.GetConnectionString("DefaultConnection");
+string rawConnectionString;
+
+rawConnectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+if (string.IsNullOrEmpty(rawConnectionString))
+{
+    rawConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+
+if (string.IsNullOrEmpty(rawConnectionString))
+{
+    throw new InvalidOperationException("Database connection string is not configured. Please set 'ConnectionStrings:DefaultConnection' in appsettings.json or 'DATABASE_URL' environment variable.");
+}
+
+var npgsqlBuilder = new NpgsqlConnectionStringBuilder(rawConnectionString);
+string finalConnectionString = npgsqlBuilder.ConnectionString;
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(finalConnectionString));
 
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
