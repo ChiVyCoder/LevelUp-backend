@@ -14,6 +14,6 @@ namespace LevelUp.Models
         public string Type { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string SkillsRequired { get; set; } = string.Empty;
-        public DateTime DatePosted { get; set; }   
+        public DateTime DatePosted { get; set; } = DateTime.UtcNow;
     }
 }

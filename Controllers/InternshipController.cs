@@ -1,12 +1,11 @@
-﻿// LevelUp/Controllers/InternshipApplicationController.cs
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using LevelUp.Data;
 using LevelUp.Models;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System;
 
 namespace LevelUp.Controllers
 {
@@ -23,10 +22,8 @@ namespace LevelUp.Controllers
             _logger = logger;
         }
 
-        // Endpoint ĐĂNG KÝ THỰC TẬP
-        // POST api/internship-applications/{userId}/{jobId}
-        [HttpPost("internship-applications/{userId}/{jobId}")] 
-        public async Task<IActionResult> RegisterInternship(int userId, int jobId, [FromBody] InternshipRegistration application) // <<< Đổi internshipId thành jobId
+        [HttpPost("internship-applications/{userId}/{jobId}")]
+        public async Task<IActionResult> RegisterInternship(int userId, int jobId, [FromBody] InternshipRegistration application)
         {
             var userExists = await _context.Users.AnyAsync(u => u.Id == userId);
             if (!userExists)
@@ -34,19 +31,24 @@ namespace LevelUp.Controllers
                 return NotFound(new { message = $"Người dùng với ID {userId} không tồn tại." });
             }
 
-            var jobExists = await _context.Jobs.AnyAsync(j => j.JobID == jobId); 
+            var jobExists = await _context.Jobs.AnyAsync(j => j.JobID == jobId);
             if (!jobExists)
             {
-                return NotFound(new { message = $"Cơ hội thực tập/việc làm với ID {jobId} không tồn tại." }); // <<< Cập nhật thông báo
+                return NotFound(new { message = $"Cơ hội thực tập/việc làm với ID {jobId} không tồn tại." });
             }
 
             application.UserId = userId;
-            application.JobID = jobId; 
+            application.JobID = jobId;
             application.ApplicationDate = DateTime.UtcNow;
             application.Status = "Pending";
 
+            if (application.DateOfBirth.Kind == DateTimeKind.Unspecified || application.DateOfBirth.Kind == DateTimeKind.Local)
+            {
+                application.DateOfBirth = application.DateOfBirth.ToUniversalTime();
+            }
+
             ModelState.Remove("User");
-            ModelState.Remove("Job"); 
+            ModelState.Remove("Job");
             ModelState.Remove("ApplicationDate");
             ModelState.Remove("Status");
 
@@ -60,15 +62,16 @@ namespace LevelUp.Controllers
             {
                 _context.InternshipRegistrations.Add(application);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation($"Internship application for JobID {jobId} by UserID {userId} saved successfully. Id: {application.Id}"); // <<< Cập nhật log
+                _logger.LogInformation($"Internship application for JobID {jobId} by UserID {userId} saved successfully. Id: {application.Id}");
                 return Ok(new { message = "Đăng ký thực tập thành công!", applicationId = application.Id });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error saving internship application for JobID {jobId} by UserID {userId}.");
+                _logger.LogError(ex, $"Error saving internship application for JobID {jobId} by UserID {userId}. Inner exception: {ex.InnerException?.Message}");
 
                 if (ex.InnerException?.Message.Contains("duplicate key") == true
-                    || ex.InnerException?.Message.Contains("Cannot insert duplicate key") == true)
+                    || ex.InnerException?.Message.Contains("Cannot insert duplicate key") == true
+                    || ex.InnerException?.Message.Contains("violates unique constraint") == true)
                 {
                     return Conflict(new { message = "Bạn đã đăng ký cơ hội này rồi." });
                 }
@@ -81,17 +84,15 @@ namespace LevelUp.Controllers
             }
         }
 
-        // Endpoint để lấy tất cả các đăng ký thực tập của một người dùng cụ thể
-        // GET api/users/{userId}/internship-applications
         [HttpGet("users/{userId}/internship-applications")]
         public async Task<ActionResult<IEnumerable<InternshipRegistration>>> GetInternshipApplicationsForUser(int userId)
         {
             var applications = await _context.InternshipRegistrations
-                                             .Where(ir => ir.UserId == userId)
-                                             .Include(ir => ir.Job)
-                                             .ToListAsync();
+                                            .Where(ir => ir.UserId == userId)
+                                            .Include(ir => ir.Job)
+                                            .ToListAsync();
 
-            if (applications == null || !applications.Any())
+            if (!applications.Any())
             {
                 return NotFound(new { message = $"Không tìm thấy đăng ký thực tập nào cho người dùng ID {userId}." });
             }
@@ -101,13 +102,13 @@ namespace LevelUp.Controllers
                 app.Id,
                 app.ApplicationDate,
                 app.Status,
-                Job = app.Job != null ? new 
+                Job = app.Job != null ? new
                 {
                     app.Job.JobID,
                     app.Job.CompanyName,
                     app.Job.Location,
                     app.Job.Industry,
-                } : null 
+                } : null
             }).ToList();
 
             return Ok(result);

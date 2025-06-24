@@ -7,7 +7,7 @@ using Npgsql;
 using System.Text.RegularExpressions;
 
 var builder = WebApplication.CreateBuilder(args);
-
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 // Lấy chuỗi kết nối
 string rawConnectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
 

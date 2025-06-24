@@ -41,7 +41,7 @@ namespace LevelUp.Controllers
                 {
                     UserId = userId,
                     CourseId = courseId,
-                    EnrolledAt = DateTime.Now,
+                    EnrolledAt = DateTime.UtcNow,
                     Completed = true
                 };
                 _context.UserCourses.Add(userCourse);
